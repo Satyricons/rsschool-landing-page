@@ -1,19 +1,23 @@
 # Shelter
 
-Деплой: https://satyricons.github.io/Shelter/
+Деплой: https://satyricons.github.io/rsschool-landing-page/
 
-1. Верстка двух страниц (Main и Pets) по Figma-дизайну. Ширина контента фиксированная 1280px — НЕ меняется при ресайзе окна (адаптив будет в P2). Только artboards main-1280 и our-pets-1280.
+Верстка двух страниц (Main и Pets) по Figma-дизайну. Ширина контента фиксированная 1280px — НЕ меняется при ресайзе окна (адаптив будет в P2). Только artboards main-1280 и our-pets-1280.
 
-2. Сабмит — деплой + PR + cross-check. 
+Единый header и footer на обеих страницах, favicon подключён.
 
-https://publish.obsidian.md/juniornotess/RS-Bootcamp-2026/Tasks/02a+—+Shelter+Part+1+—+Fixed+Layout
+Главная: hero-секция, слайдер (3+ слайда), секции «About», «Our pets», «Help», «Donation».
 
-3. Adaptability
+Каталог: 3 категории (All / Dogs / Cats), сетка карточек (8+ в категории), пагинация.
 
-4. JS
+Адаптив от 1440px до 380px, на 768px и меньше — бургер-меню.
 
-4.1. JS слайдер
+Светлая и тёмная темы с переключателем и сохранением в localStorage.
 
-5. Asynh
+Семантическая разметка (header, nav, main, section, footer), один <h1> на страницу, alt у значимых изображений.
 
-6. Мобильное меню
+Обе страницы проходят W3C Validator без ошибок.
+
+Ссылки mailto:, tel:, карты открываются корректно.
+
+Hover-состояния у ссылок, кнопок и карточек с плавными переходами.
