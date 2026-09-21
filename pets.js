@@ -9,31 +9,34 @@ fetch('data.json')
   .then(data => {
     list = data
 
-//Заполняем контейнер
-
-for (let i = 0; i < list.length; i++) {
-  document.querySelector('.slides_our_pets').insertAdjacentHTML(
-    'beforeend',
-    `<div class="slide_pets">
-                    <div class="img_slide"><img src=${list[i].img} alt=""></div>
-                    <div class="name_slide">${list[i].name}</div>
-                    <button class="button_slide")>Learn more</button>
+    // Заполняем контейнер
+    for (let i = 0; i < list.length; i++) {
+      document.querySelector('.slides_our_pets').insertAdjacentHTML(
+        'beforeend',
+        `<div class="slide_pets">
+                    <div class="img_slide"><img src="${list[i].img}" alt="${list[i].name} — ${list[i].breed}"></div>
+                    <h3 class="name_slide">${list[i].name}</h3>
+                    <button class="button_slide" type="button">Learn more</button>
                 </div>`
-  )
-}
+      )
+    }
 
- document.querySelector('.slides_our_pets').addEventListener('click', function(event) {      
-      if (event.target.classList.contains('button_slide')) showPet (Array.from(document.querySelectorAll('.slide_pets')).indexOf(event.target.closest('.slide_pets')))
+    document.querySelector('.slides_our_pets').addEventListener('click', function (event) {
+      if (event.target.classList.contains('button_slide')) {
+        showPet(
+          Array.from(document.querySelectorAll('.slide_pets')).indexOf(
+            event.target.closest('.slide_pets')
+          )
+        )
+      }
     })
 
-//Инициализация
-reinit()
-
+    // Инициализация
+    reinit()
   })
   .catch(error => {
     console.error('Ошибка:', error)
-  }) 
-
+  })
 
 function reinit () {
   document.querySelector('.next').addEventListener('click', next)
@@ -41,7 +44,7 @@ function reinit () {
   document.querySelector('.next_end').addEventListener('click', next_end)
   document.querySelector('.prev_start').addEventListener('click', prev_start)
   document.querySelector('.burger').addEventListener('click', openBurger)
-  
+
   document.querySelector(
     '.container_slides_our_pets'
   ).style.transform = `translate(0px)`
@@ -49,7 +52,8 @@ function reinit () {
   setPage(page)
   buttonStatus('prev', 'inactive')
   buttonStatus('next_end', 'active')
-  //Кол-во страниц относительно размера экрана:
+
+  // Кол-во страниц относительно размера экрана:
   countPages =
     window.innerWidth >= 1280
       ? list.length / 8
@@ -58,22 +62,30 @@ function reinit () {
       : window.innerWidth >= 320
       ? list.length / 3
       : 1
-if(!document.querySelector('.container_modal_menu')&(window.innerWidth < 768)){
-      document.body.insertAdjacentHTML(
-    'beforeend',
-    `<div class="container_modal_menu">
+
+  if (
+    !document.querySelector('.container_modal_menu') &&
+    window.innerWidth <= 768
+  ) {
+    document.body.insertAdjacentHTML(
+      'beforeend',
+      `<div class="container_modal_menu">
     <nav class="mob_nav-menu_pets">
           <ul>
             <li><a href="./index.html#about">About the shelter</a></li>
-            <li id="active_a_pets"><a href="./pets.html#pets">Our pets</a></li>
+            <li class="nav-link--active"><a href="./pets.html#pets">Our pets</a></li>
             <li><a href="./index.html#help">Help the shelter</a></li>
             <li><a href="./pets.html#contacts">Contacts</a></li>
           </ul>
         </nav>    
     </div>`
-  )
-  document.querySelector('.container_modal_menu').addEventListener('click', closeBurger)
-} else if(window.innerWidth < 768) {document.querySelector('.container_modal_menu').setAttribute('id', 'inactive')}
+    )
+    document
+      .querySelector('.container_modal_menu')
+      .addEventListener('click', closeBurger)
+  } else if (window.innerWidth <= 768) {
+    document.querySelector('.container_modal_menu').setAttribute('id', 'inactive')
+  }
 }
 
 function setPage (page) {
@@ -90,7 +102,7 @@ function buttonStatus (button, status) {
   }
 }
 
-//Сдвиг слайдеров
+// Сдвиг слайдеров
 function next () {
   pix = -(document.querySelector('.container_show_our_pets').clientWidth + 40)
   if (page + 1 < countPages) {
@@ -121,7 +133,6 @@ function next_end () {
 function prev () {
   if (page > 0) {
     page--
-    console.log(page, pix * page)
     setPage(page)
     buttonStatus('next_end', 'active')
     document.querySelector(
@@ -135,31 +146,31 @@ function prev_start () {
   reinit()
 }
 
-// отследить событие изменения окна
-let lastWidth = window.innerWidth;
+// Отследить событие изменения окна
+let lastWidth = window.innerWidth
 window.addEventListener('resize', () => {
-  const currentWidth = window.innerWidth;
+  const currentWidth = window.innerWidth
   if (currentWidth !== lastWidth) {
-    console.log(`Ширина изменена! Текущая ширина: ${currentWidth}px`);
-    // здесь ваш код, который выполнится при изменении ширины
-    reinit();
-    lastWidth = currentWidth; // обновляем сохраненное значение
+    reinit()
+    lastWidth = currentWidth
   }
-});
+})
 
-//Модальное окно при нажатии кнопки
+// Модальное окно при нажатии кнопки
 function showPet (id) {
   document.body.insertAdjacentHTML(
     'beforeend',
     `<div class="container_modal">
   <div class="full_modal">
-  <img onclick=closePet() class="close_modal" src="./img/modal_close_button.png">      
+  <button class="close_modal" type="button" aria-label="Close modal">
+    <img src="./img/modal_close_button.png" alt="">
+  </button>
     <div class="modal">
-    <img src=${list[id].img} alt="">
+    <img src="${list[id].img}" alt="${list[id].name} — ${list[id].breed}">
     <div class="modal_content">
     
     <div class="modal_content_one">
-    <div class="modal_mame_pets">${list[id].name}</div>
+    <div class="modal_name_pets">${list[id].name}</div>
     <div class="modal_type_pets">${list[id].type} - ${list[id].breed}</div>
     <div class="modal_description_pets">${list[id].description}</div>
     </div>
@@ -169,11 +180,11 @@ function showPet (id) {
     <ul>   
     <li><b>Age: </b>${list[id].age}
     </li>    
-    <li><b>Inoculations: </b>${list[id].inoculations}
+    <li><b>Inoculations: </b>${list[id].inoculations.join(', ')}
     </li>
-    <li><b>Inoculations: </b>${list[id].diseases}
+    <li><b>Diseases: </b>${list[id].diseases.join(', ')}
     </li>
-    <li><b>Parasites: </b>${list[id].parasites}
+    <li><b>Parasites: </b>${list[id].parasites.join(', ')}
     </li>
     </ul>
     </div>
@@ -187,32 +198,33 @@ function showPet (id) {
    
     </div>`
   )
+  document
+    .querySelector('.close_modal')
+    .addEventListener('click', closePet)
 }
 
 function closePet () {
   document.querySelector('.container_modal').remove()
 }
 
-//Меню мобильной версии
+// Меню мобильной версии
 function openBurger () {
-      !document.getElementById('active_menu')
-        ? document
-            .querySelector('.container_modal_menu')
-            .setAttribute('id', 'active_menu')
-        : document
-            .querySelector('.container_modal_menu')
-            .setAttribute('id', 'inactive_menu') 
-            
+  !document.getElementById('active_menu')
+    ? document
+        .querySelector('.container_modal_menu')
+        .setAttribute('id', 'active_menu')
+    : document
+        .querySelector('.container_modal_menu')
+        .setAttribute('id', 'inactive_menu')
 
-
-document.querySelector('.burger')? document.querySelector('.burger').setAttribute('class', 'burger_active') : document.querySelector('.burger_active').setAttribute('class', 'burger')
-    }
-
-function closeBurger (){
-  document.querySelector('.container_modal_menu').setAttribute('id', 'inactive_menu')
-document.querySelector('.burger_active').setAttribute('class', 'burger')
+  document.querySelector('.burger')
+    ? document.querySelector('.burger').setAttribute('class', 'burger_active')
+    : document.querySelector('.burger_active').setAttribute('class', 'burger')
 }
 
-
-
-  
+function closeBurger () {
+  document
+    .querySelector('.container_modal_menu')
+    .setAttribute('id', 'inactive_menu')
+  document.querySelector('.burger_active').setAttribute('class', 'burger')
+}

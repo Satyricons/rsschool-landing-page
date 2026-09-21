@@ -161,6 +161,9 @@ h1 {
   display: none;
    transform: rotate(0deg);
   z-index: 100;
+  border: none;
+  background: transparent;
+  padding: 0;
 }
 
 @media (max-width: 767px) {
@@ -730,6 +733,7 @@ h1 {
 }
 
 .name_slide {
+  margin: 0;
   font-family: var(--font-family);
   font-weight: 400;
   font-size: 20px;
@@ -1454,7 +1458,7 @@ height: 321px;
   }
 }
 
-.modal_mame_pets {  
+.modal_name_pets {  
   font-family: var(--font-family);
   font-weight: 400;
   font-size: 35px;
@@ -1464,11 +1468,11 @@ height: 321px;
 }
 
 @media (max-width: 767px) {
-  .modal_type_pets {
+  .modal_name_pets {
     margin-left: 31px;
     margin-top: 2px;
   }
-  .modal_mame_pets{
+  .modal_name_pets{
     margin-left: 36px;
   }
 }
@@ -1591,12 +1595,14 @@ height: 321px;
 }
 
 .close_modal {
-  cursor: pointer;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer; 
  margin-left: 931px;
   width: 52px;
   height: 52px;
-  top: 332px;
-   
+  top: 332px; 
 
 }
 
