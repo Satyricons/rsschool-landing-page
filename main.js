@@ -20,52 +20,72 @@ fetch('data.json')
       )
     }
 
-    document.querySelector('.slides').addEventListener('click', function (event) {
-      if (event.target.classList.contains('button_slide')) {
-        showPet(
-          Array.from(document.querySelectorAll('.slide')).indexOf(
-            event.target.closest('.slide')
-          )
-        )
-      }
-    })
+    // Инициализация мобильного меню
+    initMobileMenu()
+
+    // Делегирование всех кликов
+    initDelegatedHandlers()
+
+    // Начальное состояние кнопки "назад"
+    buttonStatus('inactive')
   })
   .catch(error => {
     console.error('Ошибка:', error)
   })
 
-buttonStatus('inactive')
-function buttonStatus (status) {
-  document.querySelector('.prev').setAttribute('id', status)
-}
+/* ========== ИНИЦИАЛИЗАЦИЯ МОБИЛЬНОГО МЕНЮ ========== */
 
-// Инициализация мобильного меню
-
-if (
-  !document.querySelector('.container_modal_menu') &&
-  window.innerWidth <= 768
-) {
-  document.body.insertAdjacentHTML(
-    'beforeend',
-    `<div class="container_modal_menu">
-    <nav class="mob_nav-menu_pets">
+function initMobileMenu () {
+  if (!document.querySelector('.container_modal_menu') && window.innerWidth <= 768) {
+    document.body.insertAdjacentHTML(
+      'beforeend',
+      `<div class="container_modal_menu" id="inactive">
+        <nav class="mob_nav-menu_pets">
           <ul>
             <li class="nav-link--active"><a href="./index.html#about">About the shelter</a></li>
             <li><a href="./pets.html#pets">Our pets</a></li>
             <li><a href="./index.html#help">Help the shelter</a></li>
             <li><a href="./pets.html#contacts">Contacts</a></li>
           </ul>
-        </nav>    
-    </div>`
-  )
-  document
-    .querySelector('.container_modal_menu')
-    .addEventListener('click', closeBurger)
-} else if (window.innerWidth <= 768) {
-  document.querySelector('.container_modal_menu').setAttribute('id', 'inactive')
+        </nav>
+      </div>`
+    )
+    document
+      .querySelector('.container_modal_menu')
+      .addEventListener('click', closeBurger)
+  } else if (document.querySelector('.container_modal_menu')) {
+    document.querySelector('.container_modal_menu').setAttribute('id', 'inactive')
+  }
 }
 
-// Модальное окно при нажатии кнопки
+/* ========== ДЕЛЕГИРОВАНИЕ КЛИКОВ ========== */
+
+function initDelegatedHandlers () {
+  document.addEventListener('click', (event) => {
+    // Слайды: клик по "Learn more"
+    if (event.target.classList.contains('button_slide')) {
+      const slide = event.target.closest('.slide')
+      if (slide) {
+        const slides = Array.from(document.querySelectorAll('.slide'))
+        showPet(slides.indexOf(slide))
+      }
+      return
+    }
+
+    if (event.target.closest('.next')) { next(); return }
+    if (event.target.closest('.prev')) { prev(); return }
+    if (event.target.closest('.burger')) { openBurger(); return }
+  })
+}
+
+/* ========== СТАТУС КНОПОК ========== */
+
+function buttonStatus (status) {
+  document.querySelector('.prev').setAttribute('id', status)
+}
+
+/* ========== МОДАЛЬНОЕ ОКНО ========== */
+
 function showPet (id) {
   document.body.insertAdjacentHTML(
     'beforeend',
@@ -116,13 +136,10 @@ function closePet () {
   document.querySelector('.container_modal').remove()
 }
 
-// Сдвиг слайдеров
+/* ========== СЛАЙДЕР ========== */
 
 let page = 0
 let pix = 0
-document.querySelector('.next').addEventListener('click', next)
-document.querySelector('.prev').addEventListener('click', prev)
-document.querySelector('.burger').addEventListener('click', openBurger)
 
 function next () {
   window.innerWidth >= 1280
@@ -168,37 +185,50 @@ function prev () {
   }
 }
 
-// Отследить событие изменения окна
+/* ========== RESIZE ========== */
+
 let lastWidth = window.innerWidth
 window.addEventListener('resize', () => {
   const currentWidth = window.innerWidth
   if (currentWidth !== lastWidth) {
-    document.querySelector('.slides').style.transform = `translate(0px)`
+    const slides = document.querySelector('.slides')
+    if (slides) slides.style.transform = `translate(0px)`
     page = 0
-    buttonStatus('inactive')
+    const prevBtn = document.querySelector('.prev')
+    if (prevBtn) buttonStatus('inactive')
+    initMobileMenu()
     lastWidth = currentWidth
   }
 })
 
-// Открываем и закрываем мобильное меню
-function openBurger () {
-  !document.getElementById('active_menu')
-    ? document
-        .querySelector('.container_modal_menu')
-        .setAttribute('id', 'active_menu')
-    : document
-        .querySelector('.container_modal_menu')
-        .setAttribute('id', 'inactive_menu')
+/* ========== БУРГЕР-МЕНЮ ========== */
 
-  document.querySelector('.burger')
-    ? document.querySelector('.burger').setAttribute('class', 'burger_active')
-    : document.querySelector('.burger_active').setAttribute('class', 'burger')
+function openBurger () {
+  const menu = document.querySelector('.container_modal_menu')
+  const burger = document.querySelector('.burger')
+  if (!menu || !burger) return
+
+  const isOpen = menu.getAttribute('id') === 'active_menu'
+
+  if (isOpen) {
+    menu.setAttribute('id', 'inactive_menu')
+    burger.classList.remove('burger_active')
+    burger.setAttribute('aria-expanded', 'false')
+  } else {
+    menu.setAttribute('id', 'active_menu')
+    burger.classList.add('burger_active')
+    burger.setAttribute('aria-expanded', 'true')
+  }
 }
 
-// Если нажать на мобильное окно, то оно закроется
 function closeBurger () {
-  document
-    .querySelector('.container_modal_menu')
-    .setAttribute('id', 'inactive_menu')
-  document.querySelector('.burger_active').setAttribute('class', 'burger')
+  const menu = document.querySelector('.container_modal_menu')
+  const burger = document.querySelector('.burger')
+  if (!menu) return
+
+  menu.setAttribute('id', 'inactive_menu')
+  if (burger) {
+    burger.classList.remove('burger_active')
+    burger.setAttribute('aria-expanded', 'false')
+  }
 }

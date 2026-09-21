@@ -21,33 +21,22 @@ fetch('data.json')
       )
     }
 
-    document.querySelector('.slides_our_pets').addEventListener('click', function (event) {
-      if (event.target.classList.contains('button_slide')) {
-        showPet(
-          Array.from(document.querySelectorAll('.slide_pets')).indexOf(
-            event.target.closest('.slide_pets')
-          )
-        )
-      }
-    })
-
     // Инициализация
     reinit()
+
+    // Делегирование кликов
+    initDelegatedHandlers()
   })
   .catch(error => {
     console.error('Ошибка:', error)
   })
 
-function reinit () {
-  document.querySelector('.next').addEventListener('click', next)
-  document.querySelector('.prev').addEventListener('click', prev)
-  document.querySelector('.next_end').addEventListener('click', next_end)
-  document.querySelector('.prev_start').addEventListener('click', prev_start)
-  document.querySelector('.burger').addEventListener('click', openBurger)
+/* ========== ИНИЦИАЛИЗАЦИЯ ========== */
 
-  document.querySelector(
-    '.container_slides_our_pets'
-  ).style.transform = `translate(0px)`
+function reinit () {
+  const container = document.querySelector('.container_slides_our_pets')
+  if (container) container.style.transform = `translate(0px)`
+
   page = 0
   setPage(page)
   buttonStatus('prev', 'inactive')
@@ -63,30 +52,55 @@ function reinit () {
       ? list.length / 3
       : 1
 
-  if (
-    !document.querySelector('.container_modal_menu') &&
-    window.innerWidth <= 768
-  ) {
+  initMobileMenu()
+}
+
+function initMobileMenu () {
+  if (!document.querySelector('.container_modal_menu') && window.innerWidth <= 768) {
     document.body.insertAdjacentHTML(
       'beforeend',
-      `<div class="container_modal_menu">
-    <nav class="mob_nav-menu_pets">
+      `<div class="container_modal_menu" id="inactive">
+        <nav class="mob_nav-menu_pets">
           <ul>
             <li><a href="./index.html#about">About the shelter</a></li>
             <li class="nav-link--active"><a href="./pets.html#pets">Our pets</a></li>
             <li><a href="./index.html#help">Help the shelter</a></li>
             <li><a href="./pets.html#contacts">Contacts</a></li>
           </ul>
-        </nav>    
-    </div>`
+        </nav>
+      </div>`
     )
     document
       .querySelector('.container_modal_menu')
       .addEventListener('click', closeBurger)
-  } else if (window.innerWidth <= 768) {
+  } else if (document.querySelector('.container_modal_menu')) {
     document.querySelector('.container_modal_menu').setAttribute('id', 'inactive')
   }
 }
+
+/* ========== ДЕЛЕГИРОВАНИЕ КЛИКОВ ========== */
+
+function initDelegatedHandlers () {
+  document.addEventListener('click', (event) => {
+    // Клик по "Learn more" в карточке
+    if (event.target.classList.contains('button_slide')) {
+      const slide = event.target.closest('.slide_pets')
+      if (slide) {
+        const slides = Array.from(document.querySelectorAll('.slide_pets'))
+        showPet(slides.indexOf(slide))
+      }
+      return
+    }
+
+    if (event.target.closest('.next')) { next(); return }
+    if (event.target.closest('.prev')) { prev(); return }
+    if (event.target.closest('.next_end')) { next_end(); return }
+    if (event.target.closest('.prev_start')) { prev_start(); return }
+    if (event.target.closest('.burger')) { openBurger(); return }
+  })
+}
+
+/* ========== ПАГИНАЦИЯ ========== */
 
 function setPage (page) {
   document.querySelector('.page_pets').innerHTML = page + 1
@@ -102,7 +116,6 @@ function buttonStatus (button, status) {
   }
 }
 
-// Сдвиг слайдеров
 function next () {
   pix = -(document.querySelector('.container_show_our_pets').clientWidth + 40)
   if (page + 1 < countPages) {
@@ -146,7 +159,8 @@ function prev_start () {
   reinit()
 }
 
-// Отследить событие изменения окна
+/* ========== RESIZE ========== */
+
 let lastWidth = window.innerWidth
 window.addEventListener('resize', () => {
   const currentWidth = window.innerWidth
@@ -156,7 +170,8 @@ window.addEventListener('resize', () => {
   }
 })
 
-// Модальное окно при нажатии кнопки
+/* ========== МОДАЛЬНОЕ ОКНО ========== */
+
 function showPet (id) {
   document.body.insertAdjacentHTML(
     'beforeend',
@@ -207,24 +222,34 @@ function closePet () {
   document.querySelector('.container_modal').remove()
 }
 
-// Меню мобильной версии
-function openBurger () {
-  !document.getElementById('active_menu')
-    ? document
-        .querySelector('.container_modal_menu')
-        .setAttribute('id', 'active_menu')
-    : document
-        .querySelector('.container_modal_menu')
-        .setAttribute('id', 'inactive_menu')
+/* ========== БУРГЕР-МЕНЮ ========== */
 
-  document.querySelector('.burger')
-    ? document.querySelector('.burger').setAttribute('class', 'burger_active')
-    : document.querySelector('.burger_active').setAttribute('class', 'burger')
+function openBurger () {
+  const menu = document.querySelector('.container_modal_menu')
+  const burger = document.querySelector('.burger')
+  if (!menu || !burger) return
+
+  const isOpen = menu.getAttribute('id') === 'active_menu'
+
+  if (isOpen) {
+    menu.setAttribute('id', 'inactive_menu')
+    burger.classList.remove('burger_active')
+    burger.setAttribute('aria-expanded', 'false')
+  } else {
+    menu.setAttribute('id', 'active_menu')
+    burger.classList.add('burger_active')
+    burger.setAttribute('aria-expanded', 'true')
+  }
 }
 
 function closeBurger () {
-  document
-    .querySelector('.container_modal_menu')
-    .setAttribute('id', 'inactive_menu')
-  document.querySelector('.burger_active').setAttribute('class', 'burger')
+  const menu = document.querySelector('.container_modal_menu')
+  const burger = document.querySelector('.burger')
+  if (!menu) return
+
+  menu.setAttribute('id', 'inactive_menu')
+  if (burger) {
+    burger.classList.remove('burger_active')
+    burger.setAttribute('aria-expanded', 'false')
+  }
 }
