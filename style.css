@@ -1794,3 +1794,7 @@ body {
     font-size: 15px;
   }
 }
+
+[data-theme="dark"] .modal_name_pets {
+  color: var(--color-primary)
+}
