@@ -1,12 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <script src="./pets.js" defer></script>
-    <link rel="icon" href="./img/icon-phone.png" />
-    <link rel="stylesheet" href="style.css" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Our pets</title>
+
+    <script>
+      (function () {
+        var t = localStorage.getItem('theme');
+        if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+      })();
+    </script>
+
+    <link rel="icon" href="./img/icon-phone.png" />
+    <link rel="stylesheet" href="style.css" />
+
+    <script src="./pets.js" defer></script>
+    <script src="./theme.js" defer></script>
   </head>
 
   <body>
@@ -19,6 +29,18 @@
             <a href="./index.html">Shelter for pets in Boston</a>
           </div>
         </div>
+
+        <button
+          class="theme-toggle"
+          type="button"
+          data-theme-toggle
+          aria-label="Switch to dark theme"
+          aria-pressed="false"
+        >
+          <span class="theme-toggle__icon theme-toggle__icon--sun" aria-hidden="true">☀</span>
+          <span class="theme-toggle__icon theme-toggle__icon--moon" aria-hidden="true">☾</span>
+        </button>
+
         <div class="burger"><img src="./img/Burger.png" alt="" /></div>
         <nav class="nav-menu_pets">
           <ul>
