@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Our pets</title>
+
+  <script>
+    (function () {
+      var t = localStorage.getItem('theme');
+      if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+    })();
+  </script>
+
+  <link rel="icon" href="./img/icon-phone.png" />
+  <link rel="stylesheet" href="style.css" />
+
+  <script src="./pets.js" defer></script>
+  <script src="./theme.js" defer></script>
+</head>
+
+<body>
+
+  <header class="main_pets">
+    <div class="head">
+      <div class="logo">
+        <div class="title_pets"><a href="./index.html">Cozy House</a></div>
+        <div class="subtitle_pets">
+          <a href="./index.html">Shelter for pets in Boston</a>
+        </div>
+      </div>
+
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch to dark theme"
+        aria-pressed="false">
+        <span class="theme-toggle__icon theme-toggle__icon--sun" aria-hidden="true">☀</span>
+        <span class="theme-toggle__icon theme-toggle__icon--moon" aria-hidden="true">☾</span>
+      </button>
+
+      <button class="burger" type="button" aria-label="Open menu" aria-expanded="false">
+        <img src="./img/Burger.png" alt="" />
+      </button>
+      <nav class="nav-menu_pets">
+        <ul>
+          <li><a href="./index.html#about">About the shelter</a></li>
+          <li><a class="nav-link nav-link--active" href="./pets.html#pets">Our pets</a></li>
+          <li><a href="./index.html#help">Help the shelter</a></li>
+          <li><a href="./pets.html#contacts">Contacts</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+
+    <section class="our_pets" id="pets">
+      <div class="container_our_pets">
+        <div class="name_pets">
+          <h1>
+            Our friends who <br />
+            are looking for a house
+          </h1>
+        </div>
+
+        <div class="categories" aria-label="Pet categories">
+          <button class="category-btn category-btn--active" type="button">All</button>
+          <button class="category-btn" type="button">Dogs</button>
+          <button class="category-btn" type="button">Cats</button>
+        </div>
+
+        <div class="container_show_our_pets">
+          <div class="container_slides_our_pets">
+            <div class="slides_our_pets"></div>
+          </div>
+        </div>
+        <div class="container_navigation_pets">
+          <button class="prev_start" type="button" aria-label="First page">&lt;&lt;</button>
+          <button class="prev" type="button" aria-label="Previous page">&lt;</button>
+          <div class="page_pets"></div>
+          <button class="next" type="button" aria-label="Next page">&gt;</button>
+          <button class="next_end" type="button" aria-label="Last page">&gt;&gt;</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer" id="contacts">
+    <div class="container_footer">
+      <div class="text_footer">
+        <div class="name_footer">
+          For questions <br />
+          and suggestions
+        </div>
+        <a href="mailto:email@shelter.com">
+          <div class="email_footer">
+            <div><img src="./img/icon-email.png" alt="" /></div>
+            <div>email@shelter.com</div>
+          </div>
+        </a>
+        <a href="tel:+136745677554">
+          <div class="tel_footer">
+            <div><img src="./img/icon-phone.png" alt="" /></div>
+            <div>+13 674 567 75 54</div>
+          </div>
+        </a>
+      </div>
+      <div class="text_footer">
+        <div class="name_footer">
+          We are waiting <br />
+          for your visit
+        </div>
+        <a href="https://maps.google.com/?q=1+Central+Street,+Boston" target="_blank" rel="noopener">
+          <div class="adress_footer">
+            <div><img src="./img/pin.png" alt="" /></div>
+            <div>
+              1 Central Street, Boston <br />
+              (entrance from the store)
+            </div>
+          </div>
+        </a>
+        <a href="https://maps.google.com/?q=18+South+Park,+London" target="_blank" rel="noopener">
+          <div class="adress_footer">
+            <div><img src="./img/pin.png" alt="" /></div>
+            <div>18 South Park, London</div>
+          </div>
+        </a>
+      </div>
+      <div class="img_footer">
+        <img src="./img/footer-puppy.png" alt="Puppy of Cozy House shelter" />
+      </div>
+    </div>
+  </footer>
+</body>
+
+</html>
