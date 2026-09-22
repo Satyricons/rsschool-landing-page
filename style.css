@@ -1503,6 +1503,7 @@ h1 {
 
 .modal_description_pets {
   padding-top: 41px;
+  padding-bottom: 41px;
   font-family: var(--font-family);
   font-weight: 400;
   font-size: 15px;
