@@ -1,4 +1,6 @@
-let list = []
+let list = []            // все питомцы из data.json
+let filteredList = []    // отфильтрованные по категории
+let currentCategory = 'All'
 let countPages, pix, page
 
 fetch('data.json')
@@ -8,20 +10,12 @@ fetch('data.json')
   })
   .then(data => {
     list = data
+    filteredList = [...list]
 
-    // Заполняем контейнер
-    for (let i = 0; i < list.length; i++) {
-      document.querySelector('.slides_our_pets').insertAdjacentHTML(
-        'beforeend',
-        `<div class="slide_pets">
-                    <div class="img_slide"><img src="${list[i].img}" alt="${list[i].name} — ${list[i].breed}"></div>
-                    <h3 class="name_slide">${list[i].name}</h3>
-                    <button class="button_slide" type="button">Learn more</button>
-                </div>`
-      )
-    }
+    // Рендер карточек
+    renderCards()
 
-    // Инициализация
+    // Инициализация пагинации
     reinit()
 
     // Делегирование кликов
@@ -30,6 +24,67 @@ fetch('data.json')
   .catch(error => {
     console.error('Ошибка:', error)
   })
+
+/* ========== РЕНДЕР КАРТОЧЕК ========== */
+
+function renderCards () {
+  const container = document.querySelector('.slides_our_pets')
+  container.innerHTML = ''
+
+  const perPage =
+    window.innerWidth >= 1280 ? 8 :
+    window.innerWidth >= 768  ? 6 :
+    3
+
+  const total = filteredList.length
+  const lastPageCount = total % perPage
+  const needPad = lastPageCount !== 0 ? perPage - lastPageCount : 0
+
+  // Основные карточки
+  filteredList.forEach((pet, index) => {
+    container.insertAdjacentHTML('beforeend', cardTemplate(pet, index))
+  })
+
+  // Доборные карточки (первые из filteredList) — только если нужно
+  for (let i = 0; i < needPad; i++) {
+    const pet = filteredList[i]
+    if (pet) container.insertAdjacentHTML('beforeend', cardTemplate(pet, i))
+  }
+}
+
+function cardTemplate (pet, index) {
+  return `<div class="slide_pets" data-index="${index}">
+    <div class="img_slide">
+      <img src="${pet.img}" alt="${pet.name} — ${pet.breed}">
+    </div>
+    <h3 class="name_slide">${pet.name}</h3>
+    <button class="button_slide" type="button">Learn more</button>
+  </div>`
+}
+
+/* ========== ФИЛЬТРАЦИЯ ПО КАТЕГОРИЯМ ========== */
+
+function filterByCategory (category) {
+  currentCategory = category
+
+  if (category === 'All') {
+    filteredList = [...list]
+  } else {
+    const type = category === 'Dogs' ? 'Dog' : 'Cat'
+    filteredList = list.filter(item => item.type === type)
+  }
+
+  // Перерисовать карточки
+  renderCards()
+
+  // Обновить активную кнопку
+  document.querySelectorAll('.category-btn').forEach(btn => {
+    btn.classList.toggle('category-btn--active', btn.textContent.trim() === category)
+  })
+
+  // Сбросить пагинацию
+  reinit()
+}
 
 /* ========== ИНИЦИАЛИЗАЦИЯ ========== */
 
@@ -42,15 +97,13 @@ function reinit () {
   buttonStatus('prev', 'inactive')
   buttonStatus('next_end', 'active')
 
-  // Кол-во страниц относительно размера экрана:
-  countPages =
-    window.innerWidth >= 1280
-      ? list.length / 8
-      : window.innerWidth >= 768
-      ? list.length / 6
-      : window.innerWidth >= 320
-      ? list.length / 3
-      : 1
+  // Кол-во страниц — от filteredList, с округлением вверх
+  const perPage =
+    window.innerWidth >= 1280 ? 8 :
+    window.innerWidth >= 768  ? 6 :
+    3
+
+  countPages = Math.max(1, Math.ceil(filteredList.length / perPage))
 
   initMobileMenu()
 }
@@ -82,21 +135,43 @@ function initMobileMenu () {
 
 function initDelegatedHandlers () {
   document.addEventListener('click', (event) => {
-    // Клик по "Learn more" в карточке
-    if (event.target.classList.contains('button_slide')) {
-      const slide = event.target.closest('.slide_pets')
-      if (slide) {
-        const slides = Array.from(document.querySelectorAll('.slide_pets'))
-        showPet(slides.indexOf(slide))
-      }
+    // Категории
+    if (event.target.classList.contains('category-btn')) {
+      filterByCategory(event.target.textContent.trim())
       return
     }
 
+    // "Learn more" в карточке
+    if (event.target.classList.contains('button_slide')) {
+      const slide = event.target.closest('.slide_pets')
+      if (!slide) return
+
+      const index = Number(slide.dataset.index)
+      const pet = filteredList[index]
+
+      if (pet) showPet(pet)
+      return
+    }
+
+    // Модалка
+    if (event.target.closest('.close_modal')) { closePet(); return }
+
+    // Пагинация
     if (event.target.closest('.next')) { next(); return }
     if (event.target.closest('.prev')) { prev(); return }
     if (event.target.closest('.next_end')) { next_end(); return }
     if (event.target.closest('.prev_start')) { prev_start(); return }
+
+    // Бургер
     if (event.target.closest('.burger')) { openBurger(); return }
+  })
+
+  // Esc — закрыть модалку / меню
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      closePet()
+      closeBurger()
+    }
   })
 }
 
@@ -122,23 +197,18 @@ function next () {
     page++
     setPage(page)
     buttonStatus('prev', 'active')
-    document.querySelector(
-      '.container_slides_our_pets'
-    ).style.transform = `translate(${pix * page}px)`
+    document.querySelector('.container_slides_our_pets').style.transform = `translate(${pix * page}px)`
     if (page + 1 === countPages) buttonStatus('next_end', 'inactive')
-  } else reinit()
+  }
 }
 
 function next_end () {
-  if (page < countPages) {
+  if (page < countPages - 1) {
     pix = -(document.querySelector('.container_show_our_pets').clientWidth + 40)
-    page = Math.round(countPages) - 1
+    page = countPages - 1
     setPage(page)
     buttonStatus('prev', 'active')
-    document.querySelector(
-      '.container_slides_our_pets'
-    ).style.transform = `translate(${pix * page}px)`
-
+    document.querySelector('.container_slides_our_pets').style.transform = `translate(${pix * page}px)`
     buttonStatus('next_end', 'inactive')
   }
 }
@@ -148,15 +218,18 @@ function prev () {
     page--
     setPage(page)
     buttonStatus('next_end', 'active')
-    document.querySelector(
-      '.container_slides_our_pets'
-    ).style.transform = `translate(${pix * page}px)`
+    document.querySelector('.container_slides_our_pets').style.transform = `translate(${pix * page}px)`
     if (page < 1) buttonStatus('prev', 'inactive')
   }
 }
 
 function prev_start () {
-  reinit()
+  const container = document.querySelector('.container_slides_our_pets')
+  if (container) container.style.transform = `translate(0px)`
+  page = 0
+  setPage(page)
+  buttonStatus('prev', 'inactive')
+  buttonStatus('next_end', 'active')
 }
 
 /* ========== RESIZE ========== */
@@ -165,6 +238,7 @@ let lastWidth = window.innerWidth
 window.addEventListener('resize', () => {
   const currentWidth = window.innerWidth
   if (currentWidth !== lastWidth) {
+    renderCards()
     reinit()
     lastWidth = currentWidth
   }
@@ -172,7 +246,7 @@ window.addEventListener('resize', () => {
 
 /* ========== МОДАЛЬНОЕ ОКНО ========== */
 
-function showPet (id) {
+function showPet (pet) {
   document.body.insertAdjacentHTML(
     'beforeend',
     `<div class="container_modal">
@@ -181,25 +255,25 @@ function showPet (id) {
     <img src="./img/modal_close_button.png" alt="">
   </button>
     <div class="modal">
-    <img src="${list[id].img}" alt="${list[id].name} — ${list[id].breed}">
+    <img src="${pet.img}" alt="${pet.name} — ${pet.breed}">
     <div class="modal_content">
     
     <div class="modal_content_one">
-    <div class="modal_name_pets">${list[id].name}</div>
-    <div class="modal_type_pets">${list[id].type} - ${list[id].breed}</div>
-    <div class="modal_description_pets">${list[id].description}</div>
+    <div class="modal_name_pets">${pet.name}</div>
+    <div class="modal_type_pets">${pet.type} - ${pet.breed}</div>
+    <div class="modal_description_pets">${pet.description}</div>
     </div>
     
     <div class="modal_content_two">
     <div class="modal_specifications_pets">    
     <ul>   
-    <li><b>Age: </b>${list[id].age}
+    <li><b>Age: </b>${pet.age}
     </li>    
-    <li><b>Inoculations: </b>${list[id].inoculations.join(', ')}
+    <li><b>Inoculations: </b>${pet.inoculations.join(', ')}
     </li>
-    <li><b>Diseases: </b>${list[id].diseases.join(', ')}
+    <li><b>Diseases: </b>${pet.diseases.join(', ')}
     </li>
-    <li><b>Parasites: </b>${list[id].parasites.join(', ')}
+    <li><b>Parasites: </b>${pet.parasites.join(', ')}
     </li>
     </ul>
     </div>
@@ -219,7 +293,8 @@ function showPet (id) {
 }
 
 function closePet () {
-  document.querySelector('.container_modal').remove()
+  const modal = document.querySelector('.container_modal')
+  if (modal) modal.remove()
 }
 
 /* ========== БУРГЕР-МЕНЮ ========== */
