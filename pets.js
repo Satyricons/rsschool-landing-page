@@ -85,6 +85,7 @@ function reinit () {
   page = 0
   setPage(page)
   buttonStatus('prev', 'inactive')
+  buttonStatus('next', 'active')
   buttonStatus('next_end', 'active')
 
   const perPage =
@@ -124,13 +125,11 @@ function initMobileMenu () {
 
 function initDelegatedHandlers () {
   document.addEventListener('click', (event) => {
-    // Категории
     if (event.target.classList.contains('category-btn')) {
       filterByCategory(event.target.textContent.trim())
       return
     }
 
-    // Клик по карточке
     if (event.target.closest('.slide_pets')) {
       const slide = event.target.closest('.slide_pets')
       const index = Number(slide.dataset.index)
@@ -139,26 +138,19 @@ function initDelegatedHandlers () {
       return
     }
 
-    // Модалка
     if (event.target.closest('.close_modal')) { closePet(); return }
 
-    // Кнопка "Buy a friend"
-    if (event.target.closest('.buy-btn')) {
-      handleBuy()
-      return
-    }
+    if (event.target.closest('.buy-btn')) { handleBuy(); return }
 
-    // Пагинация
     if (event.target.closest('.next')) { next(); return }
     if (event.target.closest('.prev')) { prev(); return }
     if (event.target.closest('.next_end')) { next_end(); return }
     if (event.target.closest('.prev_start')) { prev_start(); return }
 
-    // Бургер
     if (event.target.closest('.burger')) { openBurger(); return }
   })
 
-  // Изменения в форме модалки — пересчёт стоимости
+  // Пересчёт стоимости в модалке
   document.addEventListener('change', (event) => {
     if (event.target.closest('.delivery-option') || event.target.closest('.service-option')) {
       updateTotal()
@@ -185,6 +177,9 @@ function buttonStatus (button, status) {
     document.querySelector('.prev').setAttribute('id', status)
     document.querySelector('.prev_start').setAttribute('id', status)
   }
+  if (button === 'next') {
+    document.querySelector('.next').setAttribute('id', status)
+  }
   if (button === 'next_end') {
     document.querySelector('.next_end').setAttribute('id', status)
   }
@@ -197,7 +192,10 @@ function next () {
     setPage(page)
     buttonStatus('prev', 'active')
     document.querySelector('.container_slides_our_pets').style.transform = `translate(${pix * page}px)`
-    if (page + 1 === countPages) buttonStatus('next_end', 'inactive')
+    if (page + 1 === countPages) {
+      buttonStatus('next', 'inactive')
+      buttonStatus('next_end', 'inactive')
+    }
   }
 }
 
@@ -208,6 +206,7 @@ function next_end () {
     setPage(page)
     buttonStatus('prev', 'active')
     document.querySelector('.container_slides_our_pets').style.transform = `translate(${pix * page}px)`
+    buttonStatus('next', 'inactive')
     buttonStatus('next_end', 'inactive')
   }
 }
@@ -216,6 +215,7 @@ function prev () {
   if (page > 0) {
     page--
     setPage(page)
+    buttonStatus('next', 'active')
     buttonStatus('next_end', 'active')
     document.querySelector('.container_slides_our_pets').style.transform = `translate(${pix * page}px)`
     if (page < 1) buttonStatus('prev', 'inactive')
@@ -228,6 +228,7 @@ function prev_start () {
   page = 0
   setPage(page)
   buttonStatus('prev', 'inactive')
+  buttonStatus('next', 'active')
   buttonStatus('next_end', 'active')
 }
 
@@ -335,11 +336,9 @@ function showPet (pet) {
 function updateTotal () {
   let total = 0
 
-  // Доставка — только одна выбрана
   const delivery = document.querySelector('.delivery-option:checked')
   if (delivery) total += Number(delivery.dataset.price)
 
-  // Услуги — все выбранные
   document.querySelectorAll('.service-option:checked').forEach(cb => {
     total += Number(cb.dataset.price)
   })
