@@ -1,5 +1,5 @@
-let list = []            // все питомцы из data.json
-let filteredList = []    // отфильтрованные по категории
+let list = []
+let filteredList = []
 let currentCategory = 'All'
 let countPages, pix, page
 
@@ -12,13 +12,8 @@ fetch('data.json')
     list = data
     filteredList = [...list]
 
-    // Рендер карточек
     renderCards()
-
-    // Инициализация пагинации
     reinit()
-
-    // Делегирование кликов
     initDelegatedHandlers()
   })
   .catch(error => {
@@ -40,12 +35,10 @@ function renderCards () {
   const lastPageCount = total % perPage
   const needPad = lastPageCount !== 0 ? perPage - lastPageCount : 0
 
-  // Основные карточки
   filteredList.forEach((pet, index) => {
     container.insertAdjacentHTML('beforeend', cardTemplate(pet, index))
   })
 
-  // Доборные карточки (первые из filteredList) — только если нужно
   for (let i = 0; i < needPad; i++) {
     const pet = filteredList[i]
     if (pet) container.insertAdjacentHTML('beforeend', cardTemplate(pet, i))
@@ -74,15 +67,12 @@ function filterByCategory (category) {
     filteredList = list.filter(item => item.type === type)
   }
 
-  // Перерисовать карточки
   renderCards()
 
-  // Обновить активную кнопку
   document.querySelectorAll('.category-btn').forEach(btn => {
     btn.classList.toggle('category-btn--active', btn.textContent.trim() === category)
   })
 
-  // Сбросить пагинацию
   reinit()
 }
 
@@ -97,7 +87,6 @@ function reinit () {
   buttonStatus('prev', 'inactive')
   buttonStatus('next_end', 'active')
 
-  // Кол-во страниц — от filteredList, с округлением вверх
   const perPage =
     window.innerWidth >= 1280 ? 8 :
     window.innerWidth >= 768  ? 6 :
@@ -135,38 +124,27 @@ function initMobileMenu () {
 
 function initDelegatedHandlers () {
   document.addEventListener('click', (event) => {
-    // Категории
     if (event.target.classList.contains('category-btn')) {
       filterByCategory(event.target.textContent.trim())
       return
     }
 
-    // "Learn more" в карточке
-    if (event.target.classList.contains('button_slide')) {
+    if (event.target.closest('.slide_pets')) {
       const slide = event.target.closest('.slide_pets')
-      if (!slide) return
-
       const index = Number(slide.dataset.index)
       const pet = filteredList[index]
-
       if (pet) showPet(pet)
       return
     }
 
-    // Модалка
     if (event.target.closest('.close_modal')) { closePet(); return }
-
-    // Пагинация
     if (event.target.closest('.next')) { next(); return }
     if (event.target.closest('.prev')) { prev(); return }
     if (event.target.closest('.next_end')) { next_end(); return }
     if (event.target.closest('.prev_start')) { prev_start(); return }
-
-    // Бургер
     if (event.target.closest('.burger')) { openBurger(); return }
   })
 
-  // Esc — закрыть модалку / меню
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
       closePet()
@@ -287,14 +265,13 @@ function showPet (pet) {
    
     </div>`
   )
-  document
-    .querySelector('.close_modal')
-    .addEventListener('click', closePet)
+  document.body.classList.add('no-scroll')
 }
 
 function closePet () {
   const modal = document.querySelector('.container_modal')
   if (modal) modal.remove()
+  document.body.classList.remove('no-scroll')
 }
 
 /* ========== БУРГЕР-МЕНЮ ========== */
@@ -310,10 +287,12 @@ function openBurger () {
     menu.setAttribute('id', 'inactive_menu')
     burger.classList.remove('burger_active')
     burger.setAttribute('aria-expanded', 'false')
+    document.body.classList.remove('no-scroll')
   } else {
     menu.setAttribute('id', 'active_menu')
     burger.classList.add('burger_active')
     burger.setAttribute('aria-expanded', 'true')
+    document.body.classList.add('no-scroll')
   }
 }
 
@@ -327,4 +306,5 @@ function closeBurger () {
     burger.classList.remove('burger_active')
     burger.setAttribute('aria-expanded', 'false')
   }
+  document.body.classList.remove('no-scroll')
 }

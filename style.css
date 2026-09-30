@@ -204,8 +204,14 @@ h1 {
   cursor: pointer;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1279px){
+  .nav-menu ul,
+  .nav-menu_pets ul {
+    gap: 20px;
+  }
+}
 
+@media (max-width: 768px) {
   .nav-menu,
   .nav-menu_pets {
     display: none;
@@ -799,6 +805,7 @@ h1 {
 .img_slide {
   width: 270px;
   min-height: 270px;
+  cursor: pointer;
 }
 
 .help {
@@ -1503,7 +1510,7 @@ h1 {
 
 .modal_description_pets {
   padding-top: 41px;
-  padding-bottom: 41px;
+  padding-bottom: 21px;
   font-family: var(--font-family);
   font-weight: 400;
   font-size: 15px;
@@ -1791,4 +1798,8 @@ body {
 
 [data-theme="dark"] .modal_name_pets {
   color: var(--color-primary)
+}
+
+body.no-scroll {
+  overflow: hidden;
 }
