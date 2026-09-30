@@ -53,7 +53,7 @@ function initMobileMenu () {
     document
       .querySelector('.container_modal_menu')
       .addEventListener('click', closeBurger)
-  } else if (document.querySelector('.container_modal_menu')) {
+  } else if (document.querySelector('.container_modal_menu') && window.innerWidth > 768) {
     document.querySelector('.container_modal_menu').setAttribute('id', 'inactive')
   }
 }
@@ -208,6 +208,10 @@ window.addEventListener('resize', () => {
     page = 0
     const prevBtn = document.querySelector('.prev')
     if (prevBtn) buttonStatus('inactive')
+
+    // Если ширина > 768 — закрыть бургер-меню, если оно открыто
+    if (currentWidth > 768) closeBurger()
+
     initMobileMenu()
     lastWidth = currentWidth
   }

@@ -115,7 +115,7 @@ function initMobileMenu () {
     document
       .querySelector('.container_modal_menu')
       .addEventListener('click', closeBurger)
-  } else if (document.querySelector('.container_modal_menu')) {
+  } else if (document.querySelector('.container_modal_menu') && window.innerWidth > 768) {
     document.querySelector('.container_modal_menu').setAttribute('id', 'inactive')
   }
 }
@@ -124,11 +124,13 @@ function initMobileMenu () {
 
 function initDelegatedHandlers () {
   document.addEventListener('click', (event) => {
+    // Категории
     if (event.target.classList.contains('category-btn')) {
       filterByCategory(event.target.textContent.trim())
       return
     }
 
+    // Клик по карточке
     if (event.target.closest('.slide_pets')) {
       const slide = event.target.closest('.slide_pets')
       const index = Number(slide.dataset.index)
@@ -137,14 +139,33 @@ function initDelegatedHandlers () {
       return
     }
 
+    // Модалка
     if (event.target.closest('.close_modal')) { closePet(); return }
+
+    // Кнопка "Buy a friend"
+    if (event.target.closest('.buy-btn')) {
+      handleBuy()
+      return
+    }
+
+    // Пагинация
     if (event.target.closest('.next')) { next(); return }
     if (event.target.closest('.prev')) { prev(); return }
     if (event.target.closest('.next_end')) { next_end(); return }
     if (event.target.closest('.prev_start')) { prev_start(); return }
+
+    // Бургер
     if (event.target.closest('.burger')) { openBurger(); return }
   })
 
+  // Изменения в форме модалки — пересчёт стоимости
+  document.addEventListener('change', (event) => {
+    if (event.target.closest('.delivery-option') || event.target.closest('.service-option')) {
+      updateTotal()
+    }
+  })
+
+  // Esc — закрыть модалку / меню
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
       closePet()
@@ -218,6 +239,7 @@ window.addEventListener('resize', () => {
   if (currentWidth !== lastWidth) {
     renderCards()
     reinit()
+    if (currentWidth > 768) closeBurger()
     lastWidth = currentWidth
   }
 })
@@ -235,37 +257,110 @@ function showPet (pet) {
     <div class="modal">
     <img src="${pet.img}" alt="${pet.name} — ${pet.breed}">
     <div class="modal_content">
-    
+
     <div class="modal_content_one">
-    <div class="modal_name_pets">${pet.name}</div>
-    <div class="modal_type_pets">${pet.type} - ${pet.breed}</div>
-    <div class="modal_description_pets">${pet.description}</div>
+      <div class="modal_name_pets">${pet.name}</div>
+      <div class="modal_type_pets">${pet.type} - ${pet.breed}</div>
+      <div class="modal_description_pets">${pet.description}</div>
     </div>
-    
+
     <div class="modal_content_two">
-    <div class="modal_specifications_pets">    
-    <ul>   
-    <li><b>Age: </b>${pet.age}
-    </li>    
-    <li><b>Inoculations: </b>${pet.inoculations.join(', ')}
-    </li>
-    <li><b>Diseases: </b>${pet.diseases.join(', ')}
-    </li>
-    <li><b>Parasites: </b>${pet.parasites.join(', ')}
-    </li>
-    </ul>
+      <div class="modal_specifications_pets">
+        <ul>
+          <li><b>Age: </b>${pet.age}</li>
+          <li><b>Inoculations: </b>${pet.inoculations.join(', ')}</li>
+          <li><b>Diseases: </b>${pet.diseases.join(', ')}</li>
+          <li><b>Parasites: </b>${pet.parasites.join(', ')}</li>
+        </ul>
+      </div>
     </div>
+
+    <div class="modal_options">
+      <div class="option-group">
+        <div class="option-title">Delivery:</div>
+        <label class="option-label">
+          <input type="radio" name="delivery" class="delivery-option" value="0" data-price="0" checked>
+          Pickup — $0
+        </label>
+        <label class="option-label">
+          <input type="radio" name="delivery" class="delivery-option" value="10" data-price="10">
+          Courier — $10
+        </label>
+        <label class="option-label">
+          <input type="radio" name="delivery" class="delivery-option" value="5" data-price="5">
+          Post — $5
+        </label>
+      </div>
+
+      <div class="option-group">
+        <div class="option-title">Extra services:</div>
+        <label class="option-label">
+          <input type="checkbox" class="service-option" data-price="23">
+          Vaccination — $23
+        </label>
+        <label class="option-label">
+          <input type="checkbox" class="service-option" data-price="11">
+          Grooming — $11
+        </label>
+        <label class="option-label">
+          <input type="checkbox" class="service-option" data-price="3">
+          Bathing — $3
+        </label>
+        <label class="option-label">
+          <input type="checkbox" class="service-option" data-price="0">
+          Training — free
+        </label>
+      </div>
+
+      <div class="option-group">
+        <div class="option-title">Your phone:</div>
+        <input type="tel" class="phone-input" placeholder="+1 234 567 89 00">
+      </div>
+
+      <div class="option-total">
+        Total: <span class="total-value">$0</span>
+      </div>
+
+      <button class="buy-btn" type="button">Buy a friend</button>
     </div>
 
     </div>
-
     </div>
-     
     </div>
-   
     </div>`
   )
   document.body.classList.add('no-scroll')
+}
+
+function updateTotal () {
+  let total = 0
+
+  // Доставка — только одна выбрана
+  const delivery = document.querySelector('.delivery-option:checked')
+  if (delivery) total += Number(delivery.dataset.price)
+
+  // Услуги — все выбранные
+  document.querySelectorAll('.service-option:checked').forEach(cb => {
+    total += Number(cb.dataset.price)
+  })
+
+  const totalEl = document.querySelector('.total-value')
+  if (totalEl) totalEl.textContent = `$${total}`
+}
+
+function handleBuy () {
+  const phone = document.querySelector('.phone-input')
+  const phoneValue = phone ? phone.value.trim() : ''
+
+  if (!phoneValue) {
+    alert('Please enter your phone number.')
+    return
+  }
+
+  const total = document.querySelector('.total-value')
+  const totalValue = total ? total.textContent : '$0'
+
+  alert(`Thank you! We will contact you at ${phoneValue}.\nTotal: ${totalValue}`)
 }
 
 function closePet () {
