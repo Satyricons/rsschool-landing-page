@@ -204,8 +204,14 @@ h1 {
   cursor: pointer;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1279px){
+  .nav-menu ul,
+  .nav-menu_pets ul {
+    gap: 20px;
+  }
+}
 
+@media (max-width: 768px) {
   .nav-menu,
   .nav-menu_pets {
     display: none;
@@ -799,6 +805,7 @@ h1 {
 .img_slide {
   width: 270px;
   min-height: 270px;
+  cursor: pointer;
 }
 
 .help {
@@ -1412,7 +1419,7 @@ h1 {
 .full_modal {
   display: flex;
   width: 952px;
-  height: 552px;
+  height: auto;
   flex-direction: column;
   align-items: center;
 }
@@ -1420,13 +1427,13 @@ h1 {
 @media (max-width: 1279px) {
   .full_modal {
     width: 682px;
-    height: 402px;
+    height: auto;
   }
 }
 
 @media (max-width: 768px) {
   .full_modal {
-    height: 393px;
+    height: auto;
   }
 }
 
@@ -1443,7 +1450,7 @@ h1 {
   .modal {
     box-shadow: 0 2px 35px 14px rgba(13, 13, 13, 0.04);
     width: 630px;
-    height: 350px;
+    height: auto;
   }
 }
 
@@ -1451,25 +1458,24 @@ h1 {
   .modal {
     box-shadow: 0 2px 35px 14px rgba(13, 13, 13, 0.04);
     width: 240px;
-    height: 341px;
+    height: auto;
   }
 }
 
 .modal_content {
   margin-left: 30px;
   width: 351px;
-  max-height: 100%;
-  margin-top: 52px;
+  margin-top: 40px;
+  margin-bottom: 30px;
   display: flex;
   flex-direction: column;
   justify-content: start;
-  overflow-y: auto;
 }
 
 @media (max-width: 1279px) {
   .modal_content {
     width: 260px;
-    height: 303px;
+    height: auto;
     margin-left: 12px;
     margin-top: 11px;
   }
@@ -1477,9 +1483,8 @@ h1 {
 
 @media (max-width: 768px) {
   .modal_content {
-
     width: 220px;
-    height: 321px;
+    height: auto;
   }
 }
 
@@ -1503,7 +1508,7 @@ h1 {
 
 .modal_description_pets {
   padding-top: 41px;
-  padding-bottom: 41px;
+  padding-bottom: 21px;
   font-family: var(--font-family);
   font-weight: 400;
   font-size: 15px;
@@ -1726,7 +1731,7 @@ body {
 /* модалка — жёстко задан hsl, поправим на переменные */
 .modal {
   background: var(--color-light-s);
-  color: var(--color-dark-l);
+  color: var(--color-dark-l);  
 }
 
 .modal_type_pets,
@@ -1791,4 +1796,109 @@ body {
 
 [data-theme="dark"] .modal_name_pets {
   color: var(--color-primary)
+}
+
+body.no-scroll {
+  overflow: hidden;
+}
+
+/* ========== Modal options ========== */
+
+.modal_options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-dark-s);
+  font-family: var(--font-family);
+  font-size: 14px;
+  color: #000;
+}
+
+.option-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.option-title {
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.option-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.option-label input {
+  cursor: pointer;
+}
+
+.phone-input {
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid var(--color-dark-s);
+  border-radius: 6px;
+  font-family: var(--font-family);
+  font-size: 14px;
+  background: transparent;
+  color: #000;
+}
+
+.option-total {
+  font-size: 16px;
+  font-weight: 700;
+  margin-top: 4px;
+}
+
+.total-value {
+  color: var(--color-primary);
+}
+
+.buy-btn {
+  align-self: flex-start;
+  padding: 10px 24px;
+  border: 2px solid var(--color-primary);
+  border-radius: 100px;
+  background: var(--color-primary);
+  font-family: var(--font-family);
+  font-size: 15px;
+  color: var(--color-dark-3xl);
+  cursor: pointer;
+  transition: background-color .3s ease;
+  margin-top: 8px;
+}
+
+.buy-btn:hover {
+  background: var(--color-primary-light);
+}
+
+@media (max-width: 767px) {
+  .modal_options {
+    font-size: 12px;
+  }
+  .buy-btn {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+}
+
+/* Тёмная тема: текст в модалке — светлый */
+[data-theme="dark"] .modal_type_pets,
+[data-theme="dark"] .modal_description_pets,
+[data-theme="dark"] .modal_specifications_pets li,
+[data-theme="dark"] .modal_options,
+[data-theme="dark"] .option-title,
+[data-theme="dark"] .option-label,
+[data-theme="dark"] .option-total,
+[data-theme="dark"] .phone-input {
+  color: #fafafa;
+}
+
+[data-theme="dark"] .container_modal {
+  background: rgb(83 83 83 / 60%);
 }

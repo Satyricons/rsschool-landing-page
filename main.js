@@ -53,7 +53,7 @@ function initMobileMenu () {
     document
       .querySelector('.container_modal_menu')
       .addEventListener('click', closeBurger)
-  } else if (document.querySelector('.container_modal_menu')) {
+  } else if (document.querySelector('.container_modal_menu') && window.innerWidth > 768) {
     document.querySelector('.container_modal_menu').setAttribute('id', 'inactive')
   }
 }
@@ -61,14 +61,26 @@ function initMobileMenu () {
 /* ========== ДЕЛЕГИРОВАНИЕ КЛИКОВ ========== */
 
 function initDelegatedHandlers () {
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      closePet()
+      closeBurger()
+    }
+  })
+
   document.addEventListener('click', (event) => {
-    // Слайды: клик по "Learn more"
-    if (event.target.classList.contains('button_slide')) {
+    // Клик по всей карточке слайдера
+    if (event.target.closest('.slide')) {
       const slide = event.target.closest('.slide')
-      if (slide) {
-        const slides = Array.from(document.querySelectorAll('.slide'))
-        showPet(slides.indexOf(slide))
-      }
+      const slides = Array.from(document.querySelectorAll('.slide'))
+      const index = slides.indexOf(slide)
+      if (index !== -1) showPet(index)
+      return
+    }
+
+    // Клик по крестику модалки
+    if (event.target.closest('.close_modal')) {
+      closePet()
       return
     }
 
@@ -127,13 +139,13 @@ function showPet (id) {
    
     </div>`
   )
-  document
-    .querySelector('.close_modal')
-    .addEventListener('click', closePet)
+  document.body.classList.add('no-scroll')
 }
 
 function closePet () {
-  document.querySelector('.container_modal').remove()
+  const modal = document.querySelector('.container_modal')
+  if (modal) modal.remove()
+  document.body.classList.remove('no-scroll')
 }
 
 /* ========== СЛАЙДЕР ========== */
@@ -196,6 +208,10 @@ window.addEventListener('resize', () => {
     page = 0
     const prevBtn = document.querySelector('.prev')
     if (prevBtn) buttonStatus('inactive')
+
+    // Если ширина > 768 — закрыть бургер-меню, если оно открыто
+    if (currentWidth > 768) closeBurger()
+
     initMobileMenu()
     lastWidth = currentWidth
   }
@@ -214,10 +230,12 @@ function openBurger () {
     menu.setAttribute('id', 'inactive_menu')
     burger.classList.remove('burger_active')
     burger.setAttribute('aria-expanded', 'false')
+    document.body.classList.remove('no-scroll')
   } else {
     menu.setAttribute('id', 'active_menu')
     burger.classList.add('burger_active')
     burger.setAttribute('aria-expanded', 'true')
+    document.body.classList.add('no-scroll')
   }
 }
 
@@ -231,4 +249,5 @@ function closeBurger () {
     burger.classList.remove('burger_active')
     burger.setAttribute('aria-expanded', 'false')
   }
+  document.body.classList.remove('no-scroll')
 }

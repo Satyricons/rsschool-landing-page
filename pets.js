@@ -1,4 +1,6 @@
 let list = []
+let filteredList = []
+let currentCategory = 'All'
 let countPages, pix, page
 
 fetch('data.json')
@@ -8,28 +10,71 @@ fetch('data.json')
   })
   .then(data => {
     list = data
+    filteredList = [...list]
 
-    // Заполняем контейнер
-    for (let i = 0; i < list.length; i++) {
-      document.querySelector('.slides_our_pets').insertAdjacentHTML(
-        'beforeend',
-        `<div class="slide_pets">
-                    <div class="img_slide"><img src="${list[i].img}" alt="${list[i].name} — ${list[i].breed}"></div>
-                    <h3 class="name_slide">${list[i].name}</h3>
-                    <button class="button_slide" type="button">Learn more</button>
-                </div>`
-      )
-    }
-
-    // Инициализация
+    renderCards()
     reinit()
-
-    // Делегирование кликов
     initDelegatedHandlers()
   })
   .catch(error => {
     console.error('Ошибка:', error)
   })
+
+/* ========== РЕНДЕР КАРТОЧЕК ========== */
+
+function renderCards () {
+  const container = document.querySelector('.slides_our_pets')
+  container.innerHTML = ''
+
+  const perPage =
+    window.innerWidth >= 1280 ? 8 :
+    window.innerWidth >= 768  ? 6 :
+    3
+
+  const total = filteredList.length
+  const lastPageCount = total % perPage
+  const needPad = lastPageCount !== 0 ? perPage - lastPageCount : 0
+
+  filteredList.forEach((pet, index) => {
+    container.insertAdjacentHTML('beforeend', cardTemplate(pet, index))
+  })
+
+  for (let i = 0; i < needPad; i++) {
+    const pet = filteredList[i]
+    if (pet) container.insertAdjacentHTML('beforeend', cardTemplate(pet, i))
+  }
+}
+
+function cardTemplate (pet, index) {
+  return `<div class="slide_pets" data-index="${index}">
+    <div class="img_slide">
+      <img src="${pet.img}" alt="${pet.name} — ${pet.breed}">
+    </div>
+    <h3 class="name_slide">${pet.name}</h3>
+    <button class="button_slide" type="button">Learn more</button>
+  </div>`
+}
+
+/* ========== ФИЛЬТРАЦИЯ ПО КАТЕГОРИЯМ ========== */
+
+function filterByCategory (category) {
+  currentCategory = category
+
+  if (category === 'All') {
+    filteredList = [...list]
+  } else {
+    const type = category === 'Dogs' ? 'Dog' : 'Cat'
+    filteredList = list.filter(item => item.type === type)
+  }
+
+  renderCards()
+
+  document.querySelectorAll('.category-btn').forEach(btn => {
+    btn.classList.toggle('category-btn--active', btn.textContent.trim() === category)
+  })
+
+  reinit()
+}
 
 /* ========== ИНИЦИАЛИЗАЦИЯ ========== */
 
@@ -40,17 +85,15 @@ function reinit () {
   page = 0
   setPage(page)
   buttonStatus('prev', 'inactive')
+  buttonStatus('next', 'active')
   buttonStatus('next_end', 'active')
 
-  // Кол-во страниц относительно размера экрана:
-  countPages =
-    window.innerWidth >= 1280
-      ? list.length / 8
-      : window.innerWidth >= 768
-      ? list.length / 6
-      : window.innerWidth >= 320
-      ? list.length / 3
-      : 1
+  const perPage =
+    window.innerWidth >= 1280 ? 8 :
+    window.innerWidth >= 768  ? 6 :
+    3
+
+  countPages = Math.max(1, Math.ceil(filteredList.length / perPage))
 
   initMobileMenu()
 }
@@ -73,7 +116,7 @@ function initMobileMenu () {
     document
       .querySelector('.container_modal_menu')
       .addEventListener('click', closeBurger)
-  } else if (document.querySelector('.container_modal_menu')) {
+  } else if (document.querySelector('.container_modal_menu') && window.innerWidth > 768) {
     document.querySelector('.container_modal_menu').setAttribute('id', 'inactive')
   }
 }
@@ -82,21 +125,44 @@ function initMobileMenu () {
 
 function initDelegatedHandlers () {
   document.addEventListener('click', (event) => {
-    // Клик по "Learn more" в карточке
-    if (event.target.classList.contains('button_slide')) {
-      const slide = event.target.closest('.slide_pets')
-      if (slide) {
-        const slides = Array.from(document.querySelectorAll('.slide_pets'))
-        showPet(slides.indexOf(slide))
-      }
+    if (event.target.classList.contains('category-btn')) {
+      filterByCategory(event.target.textContent.trim())
       return
     }
+
+    if (event.target.closest('.slide_pets')) {
+      const slide = event.target.closest('.slide_pets')
+      const index = Number(slide.dataset.index)
+      const pet = filteredList[index]
+      if (pet) showPet(pet)
+      return
+    }
+
+    if (event.target.closest('.close_modal')) { closePet(); return }
+
+    if (event.target.closest('.buy-btn')) { handleBuy(); return }
 
     if (event.target.closest('.next')) { next(); return }
     if (event.target.closest('.prev')) { prev(); return }
     if (event.target.closest('.next_end')) { next_end(); return }
     if (event.target.closest('.prev_start')) { prev_start(); return }
+
     if (event.target.closest('.burger')) { openBurger(); return }
+  })
+
+  // Пересчёт стоимости в модалке
+  document.addEventListener('change', (event) => {
+    if (event.target.closest('.delivery-option') || event.target.closest('.service-option')) {
+      updateTotal()
+    }
+  })
+
+  // Esc — закрыть модалку / меню
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      closePet()
+      closeBurger()
+    }
   })
 }
 
@@ -111,6 +177,9 @@ function buttonStatus (button, status) {
     document.querySelector('.prev').setAttribute('id', status)
     document.querySelector('.prev_start').setAttribute('id', status)
   }
+  if (button === 'next') {
+    document.querySelector('.next').setAttribute('id', status)
+  }
   if (button === 'next_end') {
     document.querySelector('.next_end').setAttribute('id', status)
   }
@@ -122,23 +191,22 @@ function next () {
     page++
     setPage(page)
     buttonStatus('prev', 'active')
-    document.querySelector(
-      '.container_slides_our_pets'
-    ).style.transform = `translate(${pix * page}px)`
-    if (page + 1 === countPages) buttonStatus('next_end', 'inactive')
-  } else reinit()
+    document.querySelector('.container_slides_our_pets').style.transform = `translate(${pix * page}px)`
+    if (page + 1 === countPages) {
+      buttonStatus('next', 'inactive')
+      buttonStatus('next_end', 'inactive')
+    }
+  }
 }
 
 function next_end () {
-  if (page < countPages) {
+  if (page < countPages - 1) {
     pix = -(document.querySelector('.container_show_our_pets').clientWidth + 40)
-    page = Math.round(countPages) - 1
+    page = countPages - 1
     setPage(page)
     buttonStatus('prev', 'active')
-    document.querySelector(
-      '.container_slides_our_pets'
-    ).style.transform = `translate(${pix * page}px)`
-
+    document.querySelector('.container_slides_our_pets').style.transform = `translate(${pix * page}px)`
+    buttonStatus('next', 'inactive')
     buttonStatus('next_end', 'inactive')
   }
 }
@@ -147,16 +215,21 @@ function prev () {
   if (page > 0) {
     page--
     setPage(page)
+    buttonStatus('next', 'active')
     buttonStatus('next_end', 'active')
-    document.querySelector(
-      '.container_slides_our_pets'
-    ).style.transform = `translate(${pix * page}px)`
+    document.querySelector('.container_slides_our_pets').style.transform = `translate(${pix * page}px)`
     if (page < 1) buttonStatus('prev', 'inactive')
   }
 }
 
 function prev_start () {
-  reinit()
+  const container = document.querySelector('.container_slides_our_pets')
+  if (container) container.style.transform = `translate(0px)`
+  page = 0
+  setPage(page)
+  buttonStatus('prev', 'inactive')
+  buttonStatus('next', 'active')
+  buttonStatus('next_end', 'active')
 }
 
 /* ========== RESIZE ========== */
@@ -165,14 +238,16 @@ let lastWidth = window.innerWidth
 window.addEventListener('resize', () => {
   const currentWidth = window.innerWidth
   if (currentWidth !== lastWidth) {
+    renderCards()
     reinit()
+    if (currentWidth > 768) closeBurger()
     lastWidth = currentWidth
   }
 })
 
 /* ========== МОДАЛЬНОЕ ОКНО ========== */
 
-function showPet (id) {
+function showPet (pet) {
   document.body.insertAdjacentHTML(
     'beforeend',
     `<div class="container_modal">
@@ -181,45 +256,116 @@ function showPet (id) {
     <img src="./img/modal_close_button.png" alt="">
   </button>
     <div class="modal">
-    <img src="${list[id].img}" alt="${list[id].name} — ${list[id].breed}">
+    <img src="${pet.img}" alt="${pet.name} — ${pet.breed}">
     <div class="modal_content">
-    
+
     <div class="modal_content_one">
-    <div class="modal_name_pets">${list[id].name}</div>
-    <div class="modal_type_pets">${list[id].type} - ${list[id].breed}</div>
-    <div class="modal_description_pets">${list[id].description}</div>
+      <div class="modal_name_pets">${pet.name}</div>
+      <div class="modal_type_pets">${pet.type} - ${pet.breed}</div>
+      <div class="modal_description_pets">${pet.description}</div>
     </div>
-    
+
     <div class="modal_content_two">
-    <div class="modal_specifications_pets">    
-    <ul>   
-    <li><b>Age: </b>${list[id].age}
-    </li>    
-    <li><b>Inoculations: </b>${list[id].inoculations.join(', ')}
-    </li>
-    <li><b>Diseases: </b>${list[id].diseases.join(', ')}
-    </li>
-    <li><b>Parasites: </b>${list[id].parasites.join(', ')}
-    </li>
-    </ul>
+      <div class="modal_specifications_pets">
+        <ul>
+          <li><b>Age: </b>${pet.age}</li>
+          <li><b>Inoculations: </b>${pet.inoculations.join(', ')}</li>
+          <li><b>Diseases: </b>${pet.diseases.join(', ')}</li>
+          <li><b>Parasites: </b>${pet.parasites.join(', ')}</li>
+        </ul>
+      </div>
     </div>
+
+    <div class="modal_options">
+      <div class="option-group">
+        <div class="option-title">Delivery:</div>
+        <label class="option-label">
+          <input type="radio" name="delivery" class="delivery-option" value="0" data-price="0" checked>
+          Pickup — $0
+        </label>
+        <label class="option-label">
+          <input type="radio" name="delivery" class="delivery-option" value="10" data-price="10">
+          Courier — $10
+        </label>
+        <label class="option-label">
+          <input type="radio" name="delivery" class="delivery-option" value="5" data-price="5">
+          Post — $5
+        </label>
+      </div>
+
+      <div class="option-group">
+        <div class="option-title">Extra services:</div>
+        <label class="option-label">
+          <input type="checkbox" class="service-option" data-price="23">
+          Vaccination — $23
+        </label>
+        <label class="option-label">
+          <input type="checkbox" class="service-option" data-price="11">
+          Grooming — $11
+        </label>
+        <label class="option-label">
+          <input type="checkbox" class="service-option" data-price="3">
+          Bathing — $3
+        </label>
+        <label class="option-label">
+          <input type="checkbox" class="service-option" data-price="0">
+          Training — free
+        </label>
+      </div>
+
+      <div class="option-group">
+        <div class="option-title">Your phone:</div>
+        <input type="tel" class="phone-input" placeholder="+1 234 567 89 00">
+      </div>
+
+      <div class="option-total">
+        Total: <span class="total-value">$0</span>
+      </div>
+
+      <button class="buy-btn" type="button">Buy a friend</button>
     </div>
 
     </div>
-
     </div>
-     
     </div>
-   
     </div>`
   )
-  document
-    .querySelector('.close_modal')
-    .addEventListener('click', closePet)
+  document.body.classList.add('no-scroll')
+}
+
+function updateTotal () {
+  let total = 0
+
+  const delivery = document.querySelector('.delivery-option:checked')
+  if (delivery) total += Number(delivery.dataset.price)
+
+  document.querySelectorAll('.service-option:checked').forEach(cb => {
+    total += Number(cb.dataset.price)
+  })
+
+  const totalEl = document.querySelector('.total-value')
+  if (totalEl) totalEl.textContent = `$${total}`
+}
+
+function handleBuy () {
+  const phone = document.querySelector('.phone-input')
+  const phoneValue = phone ? phone.value.trim() : ''
+
+  if (!phoneValue) {
+    alert('Please enter your phone number.')
+    return
+  }
+
+  const total = document.querySelector('.total-value')
+  const totalValue = total ? total.textContent : '$0'
+
+  alert(`Thank you! We will contact you at ${phoneValue}.\nTotal: ${totalValue}`)
 }
 
 function closePet () {
-  document.querySelector('.container_modal').remove()
+  const modal = document.querySelector('.container_modal')
+  if (modal) modal.remove()
+  document.body.classList.remove('no-scroll')
 }
 
 /* ========== БУРГЕР-МЕНЮ ========== */
@@ -235,10 +381,12 @@ function openBurger () {
     menu.setAttribute('id', 'inactive_menu')
     burger.classList.remove('burger_active')
     burger.setAttribute('aria-expanded', 'false')
+    document.body.classList.remove('no-scroll')
   } else {
     menu.setAttribute('id', 'active_menu')
     burger.classList.add('burger_active')
     burger.setAttribute('aria-expanded', 'true')
+    document.body.classList.add('no-scroll')
   }
 }
 
@@ -252,4 +400,5 @@ function closeBurger () {
     burger.classList.remove('burger_active')
     burger.setAttribute('aria-expanded', 'false')
   }
+  document.body.classList.remove('no-scroll')
 }
