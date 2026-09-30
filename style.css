@@ -1886,3 +1886,19 @@ body.no-scroll {
     font-size: 13px;
   }
 }
+
+/* Тёмная тема: текст в модалке — светлый */
+[data-theme="dark"] .modal_type_pets,
+[data-theme="dark"] .modal_description_pets,
+[data-theme="dark"] .modal_specifications_pets li,
+[data-theme="dark"] .modal_options,
+[data-theme="dark"] .option-title,
+[data-theme="dark"] .option-label,
+[data-theme="dark"] .option-total,
+[data-theme="dark"] .phone-input {
+  color: #fafafa;
+}
+
+[data-theme="dark"] .container_modal {
+  background: rgb(83 83 83 / 60%);
+}
